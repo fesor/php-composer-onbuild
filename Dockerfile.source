@@ -1,4 +1,4 @@
-FROM php:7.1-fpm
+FROM php:${BASE_IMAGE_TAG}
 
 RUN apt-get update \
  && apt-get install -y git zlib1g-dev zlibc \

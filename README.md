@@ -3,6 +3,15 @@ PHP Docker Images
 
 This repository contains PHP images with composer install preformed via `ONBUILD`. This images are based on official PHP
  images to increase security and stability.
+ 
+Versions:
+
+ - 7.0-fpm
+    - 7.0.17-fpm    
+    - 7.0.18-fpm    
+ - 7.1-fpm
+    - 7.1.3-fpm
+    - 7.1.4-fpm
 
 ## Difference from official PHP images
 
