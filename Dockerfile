@@ -1,0 +1,43 @@
+FROM php:7.1-fpm
+
+RUN apt-get update \
+ && apt-get install -y git zlib1g-dev zlibc \
+ && rm -r /var/lib/apt/lists/*
+
+# Install common dependencies
+RUN apt-get update \
+    && apt-get install -y libpq-dev cron \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install common PHP extensions and extensions required by composer
+RUN docker-php-ext-install \
+        bcmath \
+        opcache \
+        pdo_pgsql \
+        zip
+
+RUN yes | pecl install \
+        apcu \
+        xdebug \
+        && echo "extension=apcu.so" > /usr/local/etc/php/conf.d/apcu.ini \
+        && echo "apc.enable_cli=1" >> /usr/local/etc/php/conf.d/apcu.ini \
+        && echo "zend_extension=xdebug.so" > /usr/local/etc/php/conf.d/xdebug.ini \
+        && echo "xdebug.remote_enable=on" >> /usr/local/etc/php/conf.d/xdebug.ini \
+        && echo "xdebug.remote_autostart=on" >> /usr/local/etc/php/conf.d/xdebug.ini \
+        && echo "xdebug.remote_connect_back=on" >> /usr/local/etc/php/conf.d/xdebug.ini
+
+# Install compoer
+ENV PATH "/composer/vendor/bin:$PATH"
+ENV COMPOSER_ALLOW_SUPERUSER 1
+ENV COMPOSER_HOME /composer
+
+COPY composer_installer.sh /composer/
+RUN /composer/composer_installer.sh && \
+    rm /composer/composer_installer.sh && \
+    composer --ansi --version --no-interaction
+
+WORKDIR /app
+
+# Install project dependencies as first build step for child images
+ONBUILD COPY composer.json composer.lock /app/
+ONBUILD RUN composer install --no-interaction --no-progress --no-ansi --no-autoloader --no-scripts
